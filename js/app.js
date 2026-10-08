@@ -446,6 +446,136 @@ function abrirModal(id) { document.getElementById(id)?.classList.add("open"); }
 export function cerrarModal(id) { document.getElementById(id)?.classList.remove("open"); }
 
 /* ──────────────────────────────────────────────
+   GENERAR RECIBO DE CAJA DESDE EL FORMULARIO
+────────────────────────────────────────────── */
+export function generarReciboDesdeFormulario() {
+  const empresa      = document.getElementById("sel-empresa")?.value ?? "";
+  const empresaCustom= (document.getElementById("inp-empresa-custom")?.value ?? "").trim();
+  const pasajero     = (document.getElementById("inp-pasajero")?.value ?? "").trim();
+  const salida       = (document.getElementById("inp-salida")?.value ?? "").trim();
+  const destino      = (document.getElementById("inp-destino")?.value ?? "").trim();
+  const valor        = parseFloat(document.getElementById("inp-valor")?.value) || 0;
+  const fechaRaw     = document.getElementById("inp-fecha")?.value ?? "";
+  
+  if (!pasajero || !salida || !destino || valor <= 0) {
+    return toast("Para generar el recibo, completa al menos: Funcionario, Salida, Destino y Valor.", "warning");
+  }
+
+  const fObj  = fechaRaw ? new Date(fechaRaw) : new Date();
+  const letrasValor = document.getElementById("letras-display")?.textContent
+                        .replace("Letras: ","").trim() || numeroALetras(valor) + " pesos m/l";
+
+  const datosRecibo = {
+    numeroVoucher: voucherActual,
+    fecha:         fObj,
+    empresa:       empresa === "OTRA" ? empresaCustom : empresa,
+    pasajero,
+    ruta:          `${salida} - ${destino}`,
+    valor,
+    valorLetras:   letrasValor
+  };
+
+  generarReciboCajaPDF(datosRecibo);
+}
+
+/* ──────────────────────────────────────────────
+   DIBUJAR EL PDF DEL RECIBO DE CAJA
+────────────────────────────────────────────── */
+export function generarReciboCajaPDF(datos) {
+  if (!window.jspdf) return toast("jsPDF no está cargado aún, intenta en un momento", "warning");
+  const { jsPDF } = window.jspdf;
+  // Recibo apaisado (landscape) tamaño media carta aprox (A5 landscape es muy similar)
+  const doc = new jsPDF({ unit: "mm", format: "a5", orientation: "landscape" });
+  const W = doc.internal.pageSize.getWidth();
+  const H = doc.internal.pageSize.getHeight();
+
+  // Bordes generales del recibo
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.4);
+  doc.rect(5, 5, W - 10, H - 10);
+
+  // Encabezado Izquierda
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.setTextColor(0, 51, 102); // Azul oscuro
+  doc.text("CARLOS ARTURO CONGOTE VELASQUEZ", 10, 15);
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
+  doc.text("RÉGIMEN SIMPLIFICADO", 10, 21);
+  doc.text("RUT: 98.553.451-8", 10, 26);
+  doc.text("Celulares: 310 517 95 02 / 300 616 36 59", 10, 31);
+  doc.text("Correo: carcove4@hotmail.com", 10, 36);
+
+  // Encabezado Derecha
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(18);
+  doc.text("RECIBO DE CAJA", W - 10, 18, { align: "right" });
+  
+  doc.setTextColor(200, 0, 0); // Rojo
+  doc.setFontSize(12);
+  doc.text(`Nº ${datos.numeroVoucher || "—"}`, W - 10, 25, { align: "right" });
+  doc.setTextColor(0, 0, 0);
+
+  // Línea separadora encabezado
+  doc.setLineWidth(0.3);
+  doc.line(5, 42, W - 5, 42);
+
+  // Datos del Servicio
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.text("Fecha:", 10, 50);
+  doc.text("Empresa:", 10, 57);
+  doc.text("Usuario:", 10, 64);
+
+  doc.setFont("helvetica", "normal");
+  const fechaFmt = datos.fecha ? datos.fecha.toLocaleDateString("es-CO", { day:"2-digit", month:"long", year:"numeric" }) : "—";
+  doc.text(fechaFmt, 30, 50);
+  doc.text(datos.empresa || "—", 30, 57);
+  doc.text(datos.pasajero || "—", 30, 64);
+
+  // Tabla Central
+  const yTabla = 72;
+  doc.setLineWidth(0.3);
+  doc.rect(10, yTabla, W - 20, 25); // Contenedor de tabla
+  doc.line(10, yTabla + 7, W - 10, yTabla + 7); // Separador de header
+  doc.line(W - 45, yTabla, W - 45, yTabla + 25); // Separador de columna valor
+
+  doc.setFont("helvetica", "bold");
+  doc.text("DESCRIPCIÓN", 12, yTabla + 5);
+  doc.text("VALOR", W - 43, yTabla + 5);
+
+  doc.setFont("helvetica", "normal");
+  const rutaLines = doc.splitTextToSize(datos.ruta || "—", W - 60);
+  doc.text(rutaLines, 12, yTabla + 12);
+  
+  doc.text("$ " + (datos.valor || 0).toLocaleString("es-CO"), W - 43, yTabla + 12);
+
+  // Pie del Recibo
+  const yPie = 105;
+  doc.setFont("helvetica", "bold");
+  doc.text("LA SUMA DE:", 10, yPie);
+  doc.text("TOTAL $", W - 45, yPie);
+
+  doc.setFont("helvetica", "normal");
+  doc.text((datos.valor || 0).toLocaleString("es-CO"), W - 10, yPie, { align: "right" });
+  
+  const letrasLines = doc.splitTextToSize(datos.valorLetras || "—", W - 60);
+  doc.text(letrasLines, 35, yPie);
+
+  // Firma
+  doc.setLineWidth(0.3);
+  doc.line(10, H - 15, 70, H - 15);
+  doc.setFont("helvetica", "bold");
+  doc.text("FIRMA", 10, H - 10);
+
+  const nombre = `ReciboCaja_CCV${datos.numeroVoucher || ""}_${(datos.pasajero || "Pasajero").split(" ")[0]}.pdf`;
+  doc.save(nombre);
+  toast("📄 Recibo de Caja generado: " + nombre, "success");
+}
+
+/* ──────────────────────────────────────────────
    GENERAR PDF (jsPDF) — incluye firma Base64
 ────────────────────────────────────────────── */
 export function generarPDF(datos) {
