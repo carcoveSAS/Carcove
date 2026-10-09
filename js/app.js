@@ -637,7 +637,7 @@ export function generarPDF(datos) {
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
   doc.text(datos.codigoVoucher || "—", W - 25, 17, { align: "center" });
-}
+
 
   /* ---- Cuerpo ---- */
   let y = 41;
