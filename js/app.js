@@ -138,7 +138,11 @@ export function actualizarCecos() {
    ACTUALIZAR LETRAS EN TIEMPO REAL
 ────────────────────────────────────────────── */
 export function actualizarLetras() {
-  const val = parseFloat(document.getElementById("inp-valor")?.value) || 0;
+  const inputValue = document.getElementById("inp-valor")?.value || "0";
+  // Reemplazar puntos de miles por nada
+  const cleanValue = inputValue.replace(/\./g, "");
+  const val = parseFloat(cleanValue) || 0;
+  
   const el  = document.getElementById("letras-display");
   if (!el) return;
   if (val <= 0) { el.innerHTML = '<span class="lbl">Letras:</span> —'; return; }
@@ -182,7 +186,9 @@ export async function guardarVoucher() {
   const cedula       = (document.getElementById("inp-cedula")?.value ?? "").trim();
   const salida       = (document.getElementById("inp-salida")?.value ?? "").trim();
   const destino      = (document.getElementById("inp-destino")?.value ?? "").trim();
-  const valor        = parseFloat(document.getElementById("inp-valor")?.value) || 0;
+ const valor = parseFloat(
+  (document.getElementById("inp-valor")?.value || "0").replace(/\./g, "")
+) || 0;
   const obs          = (document.getElementById("inp-observaciones")?.value ?? "").trim();
   const fechaRaw     = document.getElementById("inp-fecha")?.value ?? "";
   const voucher      = document.getElementById("inp-voucher")?.value ?? "";
