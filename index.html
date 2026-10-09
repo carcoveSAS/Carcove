@@ -33,7 +33,7 @@
 <header class="app-header">
   <div class="header-inner">
     <div class="header-brand">
-      <img src="assets/Logotipo minimalista CARCOVE en rojo y negro.png" alt="CARCOVE S.A.S." class="brand-logo" />
+      <div class="brand-logo">CC</div>
       <div class="brand-texts">
         <div class="brand-name">CARCOVE S.A.S.</div>
         <div class="brand-sub">NIT 901.370.095-4 · R.N.T. 57814</div>
@@ -222,7 +222,7 @@
           <label for="inp-valor">Valor (COP $)</label>
           <div class="input-wrap">
             <svg class="inp-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h.01M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 4v16"/></svg>
-            <input type="number" id="inp-valor" placeholder="Ej: 135000" min="0" step="500" oninput="window.appModule.actualizarLetras()" />
+            <input type="text" inputmode="numeric" id="inp-valor" placeholder="Ej: 135.000" oninput="window.appModule.formatearValor(this); window.appModule.actualizarLetras()" />
           </div>
           <div class="letras-box" id="letras-display" aria-live="polite">
             <span class="lbl">Letras:</span> —
