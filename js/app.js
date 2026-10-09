@@ -644,7 +644,7 @@ export function generarPDF(datos) {
   function seccion(titulo) {
     doc.setFillColor(...LGRIS); doc.rect(0, y - 1, W, 8, "F");
     doc.setFont("helvetica", "bold"); doc.setFontSize(7.5); doc.setTextColor(...ROJO);
-    doc.text(titulo, 10, y + 4.5); y += 12;
+    doc.text(titulo, 10, y + 4.5); y += 11;
   }
 
   /* Fila fecha/tipo */
@@ -661,17 +661,17 @@ export function generarPDF(datos) {
   doc.text(datos.tipoServicio || "—", W / 2 + 2, y + 11.5);
   y += 22;
 
-  seccion("● EMPRESA CONTRATANTE");
+  seccion("EMPRESA CONTRATANTE");
   campo("Empresa", datos.empresa);
   campo("Centro de Costos / N.° Encargo", datos.centroCostos);
   linea();
 
-  seccion("● FUNCIONARIO / PASAJERO");
+  seccion("FUNCIONARIO / PASAJERO");
   campo("Nombre completo", datos.pasajero, true);
   if (datos.cedula) campo("Cédula de ciudadanía", datos.cedula);
   linea();
 
-  seccion("● RUTA DEL SERVICIO");
+  seccion("RUTA DEL SERVICIO");
   campo("Lugar de salida", datos.lugarSalida);
   campo("Lugar de destino / Recorrido", datos.lugarDestino);
   if (datos.observaciones) campo("Observaciones", datos.observaciones);
@@ -690,24 +690,25 @@ export function generarPDF(datos) {
 
   /* Firma del pasajero */
   if (datos.firma) {
-    y = Math.min(y, H - 75);
+    if (y > H - 55) { doc.addPage(); y = 15; }
     doc.setFillColor(...LGRIS); doc.rect(0, y - 1, W, 8, "F");
     doc.setFont("helvetica","bold"); doc.setFontSize(7.5); doc.setTextColor(...ROJO);
-    doc.text("● FIRMA DEL PASAJERO", 10, y + 4.5); y += 12;
+    doc.text("FIRMA DEL PASAJERO", 10, y + 4.5); y += 10;
     try {
-      doc.addImage(datos.firma, "PNG", 8, y, W - 16, 22);
-      y += 26;
+      // Dibujar la firma centrada
+      doc.addImage(datos.firma, "PNG", W/2 - 35, y, 70, 35);
+      y += 40;
     } catch(_) {}
+  } else {
+    /* Firmas manuales (solo si no hay firma digital) */
+    y = Math.max(y, H - 52);
+    doc.setDrawColor(...LGRIS); doc.setLineWidth(0.25);
+    doc.line(10, y + 16, 62, y + 16);
+    doc.line(W - 62, y + 16, W - 10, y + 16);
+    doc.setFont("helvetica","normal"); doc.setFontSize(6.5); doc.setTextColor(...MGRIS);
+    doc.text("Firma del Conductor", 36, y + 20, { align: "center" });
+    doc.text("Firma del Funcionario / Pasajero", W - 36, y + 20, { align: "center" });
   }
-
-  /* Firmas manuales */
-  y = Math.max(y, H - 52);
-  doc.setDrawColor(...LGRIS); doc.setLineWidth(0.25);
-  doc.line(10, y + 16, 62, y + 16);
-  doc.line(W - 62, y + 16, W - 10, y + 16);
-  doc.setFont("helvetica","normal"); doc.setFontSize(6.5); doc.setTextColor(...MGRIS);
-  doc.text("Firma del Conductor", 36, y + 20, { align: "center" });
-  doc.text("Firma del Funcionario / Pasajero", W - 36, y + 20, { align: "center" });
 
   /* Pie de página */
   doc.setFillColor(...ROJO); doc.rect(0, H - 21, W, 21, "F");
