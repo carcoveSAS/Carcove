@@ -595,23 +595,26 @@ export function generarPDF(datos) {
   doc.setFillColor(...ROJO);
   doc.rect(0, 0, W, 35, "F");
 
-  // Logo CC
-  doc.setFillColor(255, 255, 255, 0.12);
-  doc.setDrawColor(255, 255, 255);
-  doc.setLineWidth(0.5);
-  doc.circle(15, 16, 8, "FD");
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(7.5);
-  doc.setTextColor(...BLANC);
-  doc.text("CC", 15, 18, { align: "center" });
+  // ===== LOGO DEL PDF =====
+  try {
+    const logoUrl = "assets/Logotipo minimalista CARCOVE en rojo y negro.png"; 
+    doc.addImage(logoUrl, "PNG", 10, 5, 90, 20);
+  } catch (e) {
+    console.warn("No se pudo cargar el logo:", e);
+    // fallback si falla
+    doc.setFillColor(255, 255, 255, 0.12);
+    doc.setDrawColor(255, 255, 255);
+    doc.setLineWidth(0.5);
+    doc.circle(15, 16, 8, "FD");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...BLANC);
+    doc.text("CC", 15, 18, { align: "center" });
+  }
 
-  // Nombre empresa
-  doc.setFontSize(13);
-  doc.text("CARCOVE S.A.S.", 28, 12);
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
-  doc.text("NIT: 901.370.095-4  ·  R.N.T. 57814", 28, 18.5);
-  doc.text("Servicio de Transporte Turístico y Ejecutivo", 28, 24);
+  // Nombre empresa (comentado)
+  // doc.setFontSize(13);
+  // doc.text("CARCOVE S.A.S.", 28, 12);
 
   // Badge voucher
   doc.setFillColor(255, 255, 255, 0.18);
@@ -622,6 +625,7 @@ export function generarPDF(datos) {
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
   doc.text(datos.codigoVoucher || "—", W - 25, 17, { align: "center" });
+
 
   /* ---- Cuerpo ---- */
   let y = 41;
