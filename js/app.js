@@ -135,14 +135,22 @@ export function actualizarCecos() {
 }
 
 /* ──────────────────────────────────────────────
+   FORMATEO DE MILES EN INPUT
+────────────────────────────────────────────── */
+export function formatearValor(input) {
+  let valor = input.value.replace(/\D/g, "");
+  if (valor !== "") {
+    valor = parseInt(valor, 10).toLocaleString("es-CO");
+  }
+  input.value = valor;
+}
+
+/* ──────────────────────────────────────────────
    ACTUALIZAR LETRAS EN TIEMPO REAL
 ────────────────────────────────────────────── */
 export function actualizarLetras() {
-  const inputValue = document.getElementById("inp-valor")?.value || "0";
-  // Reemplazar puntos de miles por nada
-  const cleanValue = inputValue.replace(/\./g, "");
-  const val = parseFloat(cleanValue) || 0;
-  
+  const strVal = document.getElementById("inp-valor")?.value || "";
+  const val = parseFloat(strVal.replace(/\D/g, "")) || 0;
   const el  = document.getElementById("letras-display");
   if (!el) return;
   if (val <= 0) { el.innerHTML = '<span class="lbl">Letras:</span> —'; return; }
@@ -186,9 +194,7 @@ export async function guardarVoucher() {
   const cedula       = (document.getElementById("inp-cedula")?.value ?? "").trim();
   const salida       = (document.getElementById("inp-salida")?.value ?? "").trim();
   const destino      = (document.getElementById("inp-destino")?.value ?? "").trim();
- const valor = parseFloat(
-  (document.getElementById("inp-valor")?.value || "0").replace(/\./g, "")
-) || 0;
+  const valor        = parseFloat((document.getElementById("inp-valor")?.value || "").replace(/\D/g, "")) || 0;
   const obs          = (document.getElementById("inp-observaciones")?.value ?? "").trim();
   const fechaRaw     = document.getElementById("inp-fecha")?.value ?? "";
   const voucher      = document.getElementById("inp-voucher")?.value ?? "";
@@ -460,7 +466,7 @@ export function generarReciboDesdeFormulario() {
   const pasajero     = (document.getElementById("inp-pasajero")?.value ?? "").trim();
   const salida       = (document.getElementById("inp-salida")?.value ?? "").trim();
   const destino      = (document.getElementById("inp-destino")?.value ?? "").trim();
-  const valor        = parseFloat(document.getElementById("inp-valor")?.value) || 0;
+  const valor        = parseFloat((document.getElementById("inp-valor")?.value || "").replace(/\D/g, "")) || 0;
   const fechaRaw     = document.getElementById("inp-fecha")?.value ?? "";
   
   if (!pasajero || !salida || !destino || valor <= 0) {
@@ -631,7 +637,7 @@ export function generarPDF(datos) {
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
   doc.text(datos.codigoVoucher || "—", W - 25, 17, { align: "center" });
-
+}
 
   /* ---- Cuerpo ---- */
   let y = 41;
